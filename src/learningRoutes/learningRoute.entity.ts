@@ -1,8 +1,8 @@
-import { User } from 'src/users/user.entity';
+import { User } from '../users/user.entity';
 import { BasicEntity } from '../basic.entity';
 import { Entity, Column, OneToMany, ManyToMany } from 'typeorm';
-import { Session } from 'src/sessions/session.entity';
-import { Topic } from 'src/topics/topic.entity';
+import { Session } from '../sessions/session.entity';
+import { Topic } from '../topics/topic.entity';
 
 @Entity()
 export class LearningRoute extends BasicEntity {
@@ -10,7 +10,7 @@ export class LearningRoute extends BasicEntity {
   routeName: string;
 
   @ManyToMany(() => User, (user) => user.learningRoutes)
-  user: User[];
+  users: User[];
 
   @OneToMany(() => Session, (sessions) => sessions.learningRoute)
   sessions: Session[];

@@ -1,7 +1,7 @@
 import { Column, Entity, ManyToMany, ManyToOne } from 'typeorm';
-import { BasicEntity } from 'src/basic.entity';
-import { LearningRoute } from 'src/learningRoutes/learningRoute.entity';
-import { Session } from 'src/sessions/session.entity';
+import { BasicEntity } from '../basic.entity';
+import { LearningRoute } from '../learningRoutes/learningRoute.entity';
+import { Session } from '../sessions/session.entity';
 
 @Entity()
 export class Topic extends BasicEntity {

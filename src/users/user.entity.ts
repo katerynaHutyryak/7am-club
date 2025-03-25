@@ -1,6 +1,6 @@
 import { Entity, Column, ManyToMany, JoinTable } from 'typeorm';
 import { BasicEntity } from '../basic.entity';
-import { LearningRoute } from 'src/learningRoutes/learningRoute.entity';
+import { LearningRoute } from '../learningRoutes/learningRoute.entity';
 
 export enum UserRole {
   ADMIN = 'admin',
@@ -9,16 +9,16 @@ export enum UserRole {
 
 @Entity()
 export class User extends BasicEntity {
-  @Column('string')
+  @Column({ type: 'varchar', length: 255 })
   firstName: string;
 
-  @Column('string')
+  @Column({ type: 'varchar', length: 255 })
   lastName: string;
 
-  @Column('string', { unique: true })
+  @Column('varchar', { unique: true })
   email: string;
 
-  @Column('string')
+  @Column({ type: 'varchar', length: 255 })
   password: string;
 
   @Column({
@@ -28,7 +28,7 @@ export class User extends BasicEntity {
   })
   role: UserRole;
 
-  @ManyToMany(() => LearningRoute, (learningRoute) => learningRoute.user)
+  @ManyToMany(() => LearningRoute, (learningRoute) => learningRoute.users)
   @JoinTable()
   learningRoutes: LearningRoute[];
 }

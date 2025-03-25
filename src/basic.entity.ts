@@ -11,12 +11,12 @@ export class BasicEntity {
   @PrimaryGeneratedColumn('uuid')
   id: number;
 
-  @CreateDateColumn('date')
+  @CreateDateColumn()
   createdAt: Date;
 
-  @UpdateDateColumn('date')
+  @UpdateDateColumn()
   updatedAt: Date;
 
-  @DeleteDateColumn('date')
+  @DeleteDateColumn()
   deletedAt: Date;
 }

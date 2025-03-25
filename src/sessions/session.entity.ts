@@ -1,6 +1,6 @@
-import { BasicEntity } from 'src/basic.entity';
-import { LearningRoute } from 'src/learningRoutes/learningRoute.entity';
-import { Topic } from 'src/topics/topic.entity';
+import { BasicEntity } from '../basic.entity';
+import { LearningRoute } from '../learningRoutes/learningRoute.entity';
+import { Topic } from '../topics/topic.entity';
 import { Column, Entity, JoinTable, ManyToMany, ManyToOne } from 'typeorm';
 
 @Entity()
