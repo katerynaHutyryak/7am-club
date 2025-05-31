@@ -1,8 +1,8 @@
 {
   "name": "7-am-club",
   "version": "0.0.1",
-  "description": "",
-  "author": "",
+  "description": "Self-education platform where a community of high-achievers is built",
+  "author": "Kateryna Hutyryak",
   "private": true,
   "license": "GNU AGPL-3.0",
   "scripts": {
