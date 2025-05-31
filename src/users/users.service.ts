@@ -1,32 +1,92 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
-import { User } from './user.entity';
+import { Repository } from 'typeorm';
+import { User, UserRole } from './entities/user.entity';
+import { hash } from 'bcrypt';
+import { CreateUserDTO } from './dto/createUser.dto';
+import { UpdateUserDTO } from './dto/updateUser.dto';
+import { isDbErrorWithCode } from 'src/common/isDbErrorWithCode';
+import { UserFilterDTO } from './dto/userFilter.dto';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
-    private usersRepository: Repository<User>,
-    private dataSource: DataSource,
+    private userRepository: Repository<User>,
   ) {}
 
-  findAll(): Promise<User[]> {
-    return this.usersRepository.find();
-  }
+  findAll(filters: UserFilterDTO): Promise<User[]> {
+    const hasFilters = Object.keys(filters).length > 0;
 
-  findOne(id: number): Promise<User | null> {
-    return this.usersRepository.findOneBy({ id });
-  }
+    if (hasFilters) {
+      return this.userRepository.find({
+        where: filters,
+        cache: true,
+      });
+    }
 
-  async remove(id: number): Promise<void> {
-    await this.usersRepository.delete(id);
-  }
-
-  async createMany(users: User[]) {
-    await this.dataSource.transaction(async (manager) => {
-      await manager.save(users[0]);
-      await manager.save(users[1]);
+    // No filters — return all users
+    return this.userRepository.find({
+      cache: true,
     });
+  }
+
+  findOne(id: string): Promise<User | null> {
+    return this.userRepository.findOne({ where: { id }, cache: true });
+  }
+
+  async create(userData: CreateUserDTO): Promise<User> {
+    try {
+      const passwordHash = await hash(userData.password, 10);
+
+      const user = this.userRepository.create({
+        email: userData.email,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        nickname: userData.nickname,
+        role: userData.role ? userData.role : UserRole.USER,
+        passwordHash,
+      });
+      return await this.userRepository.save(user);
+    } catch (error) {
+      if (isDbErrorWithCode(error) && error.code === '23505') {
+        throw new ConflictException(
+          'User with this nickname or email already exists',
+        );
+      }
+      throw new BadRequestException();
+    }
+  }
+
+  async update(id: string, userData: UpdateUserDTO): Promise<User> {
+    const user = await this.userRepository.findOne({ where: { id } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    try {
+      Object.assign(user, userData);
+      return await this.userRepository.save(user);
+    } catch (error) {
+      if (isDbErrorWithCode(error) && error.code === '23505') {
+        throw new ConflictException(
+          'User with this nickname or email already exists',
+        );
+      }
+      throw error;
+    }
+  }
+
+  async delete(id: string): Promise<null> {
+    const user = await this.userRepository.findOne({ where: { id } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    await this.userRepository.delete(id);
+    return null;
   }
 }
