@@ -1,5 +1,5 @@
 import { Column, Entity, ManyToMany, ManyToOne } from 'typeorm';
-import { BasicEntity } from '../basic.entity';
+import { BasicEntity } from '../common/basic.entity';
 import { LearningRoute } from '../learningRoutes/learningRoute.entity';
 import { Session } from '../sessions/session.entity';
 

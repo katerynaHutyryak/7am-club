@@ -1,5 +1,5 @@
-import { User } from '../users/user.entity';
-import { BasicEntity } from '../basic.entity';
+import { User } from '../users/entities/user.entity';
+import { BasicEntity } from '../common/basic.entity';
 import { Entity, Column, OneToMany, ManyToMany } from 'typeorm';
 import { Session } from '../sessions/session.entity';
 import { Topic } from '../topics/topic.entity';

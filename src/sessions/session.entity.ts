@@ -1,4 +1,4 @@
-import { BasicEntity } from '../basic.entity';
+import { BasicEntity } from '../common/basic.entity';
 import { LearningRoute } from '../learningRoutes/learningRoute.entity';
 import { Topic } from '../topics/topic.entity';
 import { Column, Entity, JoinTable, ManyToMany, ManyToOne } from 'typeorm';
