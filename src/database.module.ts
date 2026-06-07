@@ -1,10 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { User } from './users/entities/user.entity';
-import { LearningRoute } from './learningRoutes/entities/learningRoute.entity';
-import { Session } from './sessions/entities/session.entity';
-import { Topic } from './topics/topic.entity';
 
 @Module({
   imports: [
@@ -17,9 +13,9 @@ import { Topic } from './topics/topic.entity';
         username: configService.get<string>('DB_USER'),
         password: configService.get<string>('DB_PASS'),
         database: configService.get<string>('DB_NAME'),
+        autoLoadEntities: true,
         synchronize: configService.get<string>('NODE_ENV') !== 'production',
         logging: configService.get<string>('NODE_ENV') === 'development',
-        entities: [User, LearningRoute, Session, Topic],
       }),
       inject: [ConfigService],
     }),
