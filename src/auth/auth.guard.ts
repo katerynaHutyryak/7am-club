@@ -7,10 +7,13 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 
+import { Role } from '../users/role.enum';
+
 export interface JwtPayload {
   sub: string;
   email: string;
   name: string;
+  role: Role;
   iat?: number;
   exp?: number;
 }
