@@ -1,20 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from './user.entity';
+import { User as UserEntity } from './user.entity';
+import { User, UserWithPassword } from './user.type';
 
 @Injectable()
 export class UsersService {
   constructor(
-    @InjectRepository(User)
-    private readonly usersRepository: Repository<User>,
+    @InjectRepository(UserEntity)
+    private readonly usersRepository: Repository<UserEntity>,
   ) {}
 
   findByEmail(email: string): Promise<User | null> {
     return this.usersRepository.findOne({ where: { email } });
   }
 
-  findByEmailWithPassword(email: string): Promise<User | null> {
+  findByEmailWithPassword(email: string): Promise<UserWithPassword | null> {
     return this.usersRepository
       .createQueryBuilder('user')
       .addSelect('user.passwordHash')
