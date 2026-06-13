@@ -4,21 +4,29 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { randomUUID } from 'crypto';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from '../users/users.service';
 import { SignUpDto } from './dto/sign-up.dto';
 import { SignInDto } from './dto/sign-in.dto';
-import { AuthResponseDto } from './dto/auth-response.dto';
+import { TokenBlocklistService } from './token-blocklist.service';
+import { TOKEN_EXPIRY_SECONDS } from './auth.constants';
+
+interface RawTokenPayload {
+  jti: string;
+  exp?: number;
+}
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
+    private readonly tokenBlocklist: TokenBlocklistService,
   ) {}
 
-  async signUp(dto: SignUpDto): Promise<AuthResponseDto> {
-    const existing = await this.usersService.findByEmail(dto.email);
+  async signUp(dto: SignUpDto): Promise<string> {
+    const existing = await this.usersService.find({ email: dto.email });
     if (existing) {
       throw new ConflictException('Email already in use');
     }
@@ -30,18 +38,10 @@ export class AuthService {
       dto.name,
     );
 
-    const payload = {
-      sub: user.id,
-      email: user.email,
-      name: user.name,
-      role: user.role,
-    };
-    const accessToken = await this.jwtService.signAsync(payload);
-
-    return new AuthResponseDto(accessToken);
+    return this.jwtService.signAsync(this.buildTokenPayload(user));
   }
 
-  async signIn(dto: SignInDto): Promise<AuthResponseDto> {
+  async signIn(dto: SignInDto): Promise<string> {
     const user = await this.usersService.findByEmailWithPassword(dto.email);
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
@@ -56,16 +56,26 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const payload = {
-      sub: user.id,
-      email: user.email,
-      name: user.name,
-      role: user.role,
-    };
+    return this.jwtService.signAsync(this.buildTokenPayload(user));
+  }
 
-    const accessToken = await this.jwtService.signAsync(payload);
+  async signOut(rawToken: string): Promise<void> {
+    try {
+      const payload = await this.jwtService.verifyAsync<RawTokenPayload>(
+        rawToken,
+        { ignoreExpiration: true },
+      );
+      const expiresAt = payload.exp
+        ? new Date(payload.exp * 1000)
+        : new Date(Date.now() + TOKEN_EXPIRY_SECONDS * 1000);
+      await this.tokenBlocklist.revoke(payload.jti, expiresAt);
+    } catch {
+      // Invalid signature — cookie is still cleared by the controller
+    }
+  }
 
-    return new AuthResponseDto(accessToken);
+  private buildTokenPayload(user: { id: string; role: string }) {
+    return { sub: user.id, role: user.role, jti: randomUUID() };
   }
 
   private verifyPassword(plain: string, hash: string): Promise<boolean> {

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindOptionsWhere, Repository } from 'typeorm';
 import { User as UserEntity } from './user.entity';
 import { User, UserWithPassword } from './user.type';
 
@@ -11,8 +11,8 @@ export class UsersService {
     private readonly usersRepository: Repository<UserEntity>,
   ) {}
 
-  findByEmail(email: string): Promise<User | null> {
-    return this.usersRepository.findOne({ where: { email } });
+  find(where: FindOptionsWhere<UserEntity>): Promise<User | null> {
+    return this.usersRepository.findOne({ where });
   }
 
   findByEmailWithPassword(email: string): Promise<UserWithPassword | null> {
